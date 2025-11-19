@@ -18,6 +18,16 @@ export default defineConfig({
       alias: {
         "@renderer": resolve("src/renderer/src"),
         "@store": resolve("src/renderer/src/store"),
+        "@api": resolve("src/renderer/src/api"),
+      },
+    },
+    server: {
+      proxy: {
+        "/api": {
+          target: "http://uat.crm.xuexiluxian.cn",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ""),
+        },
       },
     },
     plugins: [vue()],
