@@ -1,13 +1,18 @@
 <template>
-  <div class="home">
-    home首页
+  <div class="home-container">
+    <WindowTitleBar />
 
-    <button @click="wss">消息提醒</button>
-    <button @click="down">下载任务</button>
+    <div class="home-content">
+      home首页
+
+      <button @click="newList">歌词</button>
+      <button @click="down">下载任务</button>
+    </div>
   </div>
 </template>
 
 <script setup>
+import WindowTitleBar from '@renderer/components/WindowTitleBar.vue'
 import { useRouter } from 'vue-router';
 import { useStore } from '@store'
 import { loginByJson } from '@api/login';
@@ -29,10 +34,13 @@ console.log(store.num)
 
 let router = useRouter()
 
-const wss = () => {
-  window.electron.ipcRenderer.invoke('ws', {
-    name: 'web'
-  })
+const newList = async () => {
+  try {
+    const result = await window.electron.ipcRenderer.invoke('new-list')
+    console.log('Result:', result)
+  } catch (error) {
+    console.error('Error creating new list window:', error)
+  }
 }
 
 const down = () => {
@@ -43,11 +51,20 @@ const down = () => {
 </script>
 
 <style scoped>
-.home {
+.home-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.home-content {
   position: relative;
   z-index: 999;
   background: red;
-  margin-top: 100px;
   -webkit-app-region: no-drag;
+  padding: 20px;
 }
 </style>

@@ -3,11 +3,14 @@ import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
 
+// 全局变量存储 ListWindow 实例
+let ListWindow: BrowserWindow | null = null;
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1000,
-    height: 570,
+    width: 1050,
+    height: 700,
     show: false,
     titleBarStyle: "hidden",
     autoHideMenuBar: true,
@@ -61,34 +64,63 @@ function createWindow(): void {
     mainWindow.webContents.send("window-unmaximized");
   });
 
-  //主进程接受渲染进程消息
-  ipcMain.handle("ws", (event, msg) => {
-    if (msg.name == "web") {
-      const ListWindow = new BrowserWindow({
-        width: 500,
-        height: 370,
-        show: false,
-        autoHideMenuBar: true,
-        ...(process.platform === "linux" ? { icon } : {}),
-        webPreferences: {
-          preload: join(__dirname, "../preload/index.js"),
-          sandbox: false,
-        },
-      });
+  // 创建子窗口的函数
+  const createListWindow = () => {
+    // 如果 ListWindow 已经存在但不可见，直接显示它
+    if (ListWindow && !ListWindow.isDestroyed() && !ListWindow.isVisible()) {
+      ListWindow.show();
+      return;
+    }
 
-      ListWindow.on("ready-to-show", () => {
+    // 如果 ListWindow 不存在或已被销毁，创建新的窗口
+    ListWindow = new BrowserWindow({
+      width: 600,
+      height: 170,
+      show: false,
+      titleBarStyle: "hidden",
+      ...(process.platform !== "darwin" ? { titleBarOverlay: true } : {}),
+      autoHideMenuBar: true,
+      ...(process.platform === "linux" ? { icon } : {}),
+      webPreferences: {
+        preload: join(__dirname, "../preload/index.js"),
+        sandbox: false,
+      },
+    });
+
+    let winHeight = screen.getPrimaryDisplay().bounds.height;
+    ListWindow.setBounds({
+      y: winHeight - 250,
+    });
+
+    // 设置窗口关闭事件
+    ListWindow.on("closed", () => {
+      ListWindow = null;
+    });
+
+    ListWindow.on("ready-to-show", () => {
+      if (ListWindow) {
         ListWindow.show();
-      });
+      }
+    });
 
+    if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
       ListWindow.loadURL(process.env["ELECTRON_RENDERER_URL"] + "/#/list");
+    } else {
+      ListWindow.loadFile(join(__dirname, "../renderer/index.html"));
+    }
+  };
 
-      console.log("Message notification"); // 改为英文输出
-      // 或者使用中文但确保编码正确
-      // console.log("消息提醒");
-    } else if (msg.name == "down") {
-      console.log("Download task"); // 改为英文输出
-      // 或者使用中文但确保编码正确
-      // console.log("下载任务");
+  // 主进程接受渲染进程消息
+  ipcMain.handle("new-list", async () => {
+    // 检查 ListWindow 是否已经存在且可见
+    if (ListWindow && !ListWindow.isDestroyed() && ListWindow.isVisible()) {
+      // 如果窗口已经存在且可见，就让它隐藏
+      ListWindow.hide();
+      return "List window hidden";
+    } else {
+      // 如果窗口不存在或不可见，就创建或显示它
+      createListWindow();
+      return "List window created successfully";
     }
   });
 
