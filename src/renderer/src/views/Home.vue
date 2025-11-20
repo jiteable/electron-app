@@ -2,7 +2,8 @@
   <div>
     home首页
 
-    <button @click="btn">按钮</button>
+    <button @click="wss">消息提醒</button>
+    <button @click="down">下载任务</button>
   </div>
 </template>
 
@@ -27,8 +28,16 @@ const login = async () => {
 console.log(store.num)
 
 let router = useRouter()
-const btn = () => {
-  router.push('/list')
+
+const wss = () => {
+  window.electron.ipcRenderer.invoke('ws', {
+    name: 'web'
+  })
 }
 
+const down = () => {
+  window.electron.ipcRenderer.invoke('ws', {
+    name: 'down'
+  })
+}
 </script>
