@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from "electron";
+import { app, shell, BrowserWindow, ipcMain, screen } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import icon from "../../resources/icon.png?asset";
@@ -6,10 +6,13 @@ import icon from "../../resources/icon.png?asset";
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1000,
+    height: 570,
     show: false,
+    titleBarStyle: "hidden",
     autoHideMenuBar: true,
+    resizable: true, // 改为true以支持窗口调整大小
+    frame: false, // 确保禁用原生框架
     ...(process.platform === "linux" ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
@@ -19,8 +22,43 @@ function createWindow(): void {
     },
   });
 
+  let winHeight = screen.getPrimaryDisplay().bounds.height;
+
+  // mainWindow.setBounds({
+  //   y: winHeight - 250,
+  // });
+
+  // console.log(screen.getPrimaryDisplay());
+  // mainWindow.webContents.openDevTools();
+
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
+  });
+
+  // 监听窗口控制事件
+  ipcMain.on("window-minimize", () => {
+    mainWindow.minimize();
+  });
+
+  ipcMain.on("window-toggle-maximize", () => {
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+  });
+
+  ipcMain.on("window-close", () => {
+    mainWindow.close();
+  });
+
+  // 向渲染进程通知窗口状态变化
+  mainWindow.on("maximize", () => {
+    mainWindow.webContents.send("window-maximized");
+  });
+
+  mainWindow.on("unmaximize", () => {
+    mainWindow.webContents.send("window-unmaximized");
   });
 
   //主进程接受渲染进程消息
@@ -44,9 +82,13 @@ function createWindow(): void {
 
       ListWindow.loadURL(process.env["ELECTRON_RENDERER_URL"] + "/#/list");
 
-      console.log("消息提醒");
+      console.log("Message notification"); // 改为英文输出
+      // 或者使用中文但确保编码正确
+      // console.log("消息提醒");
     } else if (msg.name == "down") {
-      console.log("下载任务");
+      console.log("Download task"); // 改为英文输出
+      // 或者使用中文但确保编码正确
+      // console.log("下载任务");
     }
   });
 

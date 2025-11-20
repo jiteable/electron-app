@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="home">
     home首页
 
     <button @click="wss">消息提醒</button>
@@ -41,3 +41,13 @@ const down = () => {
   })
 }
 </script>
+
+<style scoped>
+.home {
+  position: relative;
+  z-index: 999;
+  background: red;
+  margin-top: 100px;
+  -webkit-app-region: no-drag;
+}
+</style>
