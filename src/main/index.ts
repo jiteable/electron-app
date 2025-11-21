@@ -77,10 +77,9 @@ function createWindow(): void {
       width: 600,
       height: 170,
       show: false,
+      transparent: true,
       titleBarStyle: "hidden",
-      ...(process.platform !== "darwin" ? { titleBarOverlay: true } : {}),
       autoHideMenuBar: true,
-      ...(process.platform === "linux" ? { icon } : {}),
       webPreferences: {
         preload: join(__dirname, "../preload/index.js"),
         sandbox: false,
@@ -109,6 +108,19 @@ function createWindow(): void {
       ListWindow.loadFile(join(__dirname, "../renderer/index.html"));
     }
   };
+
+  ipcMain.handle("custom-adsorption", (event, msg) => {
+    // 打印窗口的当前位置和尺寸
+
+    let x = msg.appX;
+    let y = msg.appY;
+    ListWindow?.setPosition(x, y);
+
+    ListWindow?.setBounds({
+      width: 600,
+      height: 170,
+    });
+  });
 
   // 主进程接受渲染进程消息
   ipcMain.handle("new-list", async () => {
