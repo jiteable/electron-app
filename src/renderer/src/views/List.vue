@@ -1,21 +1,52 @@
 <template>
-  <div class="list-container" @mousedown="mousedown">
+  <div class="list-container" @mousedown="mousedown" @mouseenter="showControls" @mouseleave="hideControls">
     <div class="list-content">
-      list
+      <div class="header">
+        <span>list</span>
+        <div class="controls">
+          <el-button :icon="Close" v-show="controlsVisible" class="close-btn" @click="closeWindow" text />
+          <el-button v-show="isLocked || controlsVisible" class="lock-btn" @click="toggleLock" text>
+            <el-icon :size="14">
+              <Lock v-if="!isLocked" />
+              <Unlock v-else />
+            </el-icon>
+          </el-button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { Close, Lock, Unlock } from '@element-plus/icons-vue'
+import { ElButton, ElIcon } from 'element-plus'
 
 const isKeyDown = ref(false)
 const dinatesX = ref(0)
 const dinatesY = ref(0)
+const isLocked = ref(false)
+const controlsVisible = ref(false)
+
+const showControls = () => {
+  controlsVisible.value = true
+}
+
+const hideControls = () => {
+  // 鼠标离开时总是隐藏控件
+  controlsVisible.value = false
+}
 
 const mousedown = (e) => {
+  // 如果窗口被锁定，则不允许拖动
+  if (isLocked.value) {
+    return
+  }
+
   // 只有在标题栏区域按下鼠标才允许拖动
-  if (!e.target.classList.contains('title-bar') && !e.target.classList.contains('list-container')) {
+  if (!e.target.classList.contains('list-container') &&
+    !e.target.classList.contains('list-content') &&
+    !e.target.classList.contains('header')) {
     return
   }
 
@@ -63,6 +94,14 @@ const mousedown = (e) => {
   // 防止文本选择
   return false
 }
+
+const toggleLock = () => {
+  isLocked.value = !isLocked.value
+}
+
+const closeWindow = () => {
+  window.electron.ipcRenderer.invoke('new-list')
+}
 </script>
 
 <style scoped>
@@ -75,7 +114,6 @@ const mousedown = (e) => {
   cursor: default;
 }
 
-
 .list-container:hover {
   background-color: rgba(0, 0, 0, .5);
 }
@@ -84,5 +122,52 @@ const mousedown = (e) => {
   padding: 20px;
   cursor: default;
   color: white;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+.lock-btn,
+.close-btn {
+  color: white;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+}
+
+.lock-btn:hover,
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 覆盖Element Plus按钮的默认悬停样式 */
+:deep(.lock-btn:hover),
+:deep(.close-btn:hover) {
+  color: #409eff;
+  /* Element Plus 默认蓝色 */
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: transparent !important;
+}
+
+:deep(.lock-btn:focus),
+:deep(.close-btn:focus) {
+  background-color: transparent !important;
+  border-color: transparent !important;
 }
 </style>
