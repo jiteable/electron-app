@@ -25,6 +25,7 @@
     "@electron-toolkit/utils": "^3.0.0",
     "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.13.2",
+    "crypto-js": "^4.2.0",
     "element-plus": "^2.11.8",
     "nodemon": "^3.1.11",
     "pinia": "^3.0.4",

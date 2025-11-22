@@ -31,6 +31,7 @@ export default defineConfig({
     },
     server: {
       proxy: {
+        //简写
         "/api": {
           target: "http://uat.crm.xuexiluxian.cn",
           changeOrigin: true,

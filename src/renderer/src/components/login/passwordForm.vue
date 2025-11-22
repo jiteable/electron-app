@@ -1,5 +1,5 @@
 <template>
-  <form class="login-form-container" @submit.prevent="submitForm">
+  <form class="login-form-container" :model="form" @submit.prevent="submitForm">
     <div class="form-item">
       <div class="input-group">
         <el-icon class="icon-user">
@@ -10,11 +10,15 @@
     </div>
 
     <div class="form-item">
-      <div class="input-group">
+      <div class="input-group password-input">
         <el-icon class="icon-lock">
           <Lock />
         </el-icon>
-        <input v-model="form.password" type="password" placeholder="请输入密码" required />
+        <input v-model="form.password" :type="showPassword ? 'text' : 'password'" placeholder="请输入密码" required />
+        <el-icon class="password-toggle" @click="togglePasswordVisibility">
+          <View v-if="showPassword" />
+          <Hide v-else />
+        </el-icon>
       </div>
     </div>
 
@@ -27,7 +31,7 @@
       </div>
       <div class="captcha-image" @click="refreshCaptcha">
         <!-- 这里应该显示验证码图片 -->
-        <div class="placeholder-captcha">1047</div>
+        <el-image :src="captcha.url" @click="getCodeApi" class="placeholder-captcha"></el-image>
       </div>
     </div>
 
@@ -46,9 +50,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { User, Lock, Key } from '@element-plus/icons-vue'
-import { loginByJson } from '../../api/login'
+import { ref, reactive, onBeforeMount } from 'vue'
+import { User, Lock, Key, View, Hide } from '@element-plus/icons-vue'
+import { loginByJson, captchaImg } from '../../api/login'
+import { Encrypt } from '../../utils/aes'
+
 
 const form = reactive({
   username: '',
@@ -57,8 +63,41 @@ const form = reactive({
   key: '' // 验证码的key
 })
 
+//验证码
+const captcha = reactive({
+  url: '',
+  key: ''
+})
+
 // 记住密码
 const rememberPassword = ref(false)
+
+onBeforeMount(() => {
+  getCodeApi()
+})
+
+const getCodeApi = async () => {
+  const key = new Date().getTime().toString()
+  captcha.key = key
+  const res = await captchaImg({
+    key: captcha.key
+  })
+
+  console.log('res', res)
+
+  let blob = new Blob([res], { type: 'image/png' })
+  let imgUrl = URL.createObjectURL(blob)
+
+  captcha.url = imgUrl
+}
+
+// 控制密码可见性
+const showPassword = ref(false)
+
+// 切换密码可见性
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value
+}
 
 // 刷新验证码
 const refreshCaptcha = () => {
@@ -75,10 +114,10 @@ const submitForm = async () => {
   try {
     // 调用登录API
     const res = await loginByJson({
-      username: form.username,
-      password: form.password,
-      key: form.key,
-      captcha: form.captcha
+      username: Encrypt(form.username),
+      password: Encrypt(form.password),
+      captcha: form.captcha,
+      key: captcha.key
     })
 
     console.log('登录结果:', res)
@@ -137,6 +176,12 @@ const submitForm = async () => {
   height: 14px;
   margin: 0 8px;
   color: #909399;
+}
+
+.password-toggle {
+  margin-right: 8px;
+  color: #909399;
+  cursor: pointer;
 }
 
 .el-icon {
