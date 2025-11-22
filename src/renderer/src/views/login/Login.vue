@@ -143,6 +143,7 @@ const closeWindow = () => {
       z-index: 3;
 
       img {
+        user-select: none;
         width: 100%;
         height: 100%;
       }
@@ -190,6 +191,7 @@ const closeWindow = () => {
             height: 40px;
             vertical-align: bottom;
             margin-right: 10px;
+            user-select: none;
           }
 
           label {
