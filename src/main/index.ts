@@ -5,15 +5,23 @@ import icon from "../../resources/icon.png?asset";
 
 // 全局变量存储 ListWindow 实例
 let ListWindow: BrowserWindow | null = null;
+// 全局变量存储 LoginWindow 实例
+let LoginWindow: BrowserWindow | null = null;
+
+//窗口实际大小(1125x838)与设置的大小(900x670)不一致的原因
+//1.DPI缩放影响:实际窗口大小是设置大小的1.25倍（900×1.25=1125，670×1.25=837.5≈838），这表明系统可能在高DPI显示器上进行了缩放。
+//解决方法:通过获取屏幕的缩放因子来调整窗口大小
 
 function createWindow(): void {
+  // 获取主屏幕的缩放因子
+  const scaleFactor = screen.getPrimaryDisplay().scaleFactor;
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1050,
-    height: 700,
+    width: Math.round(900 / scaleFactor),
+    height: Math.round(670 / scaleFactor),
     show: false,
     titleBarStyle: "hidden",
-    autoHideMenuBar: true,
+    useContentSize: true,
     resizable: true, // 改为true以支持窗口调整大小
     frame: false, // 确保禁用原生框架
     ...(process.platform === "linux" ? { icon } : {}),
@@ -138,6 +146,67 @@ function createWindow(): void {
       return "List window created successfully";
     }
   });
+
+  // // login页面窗口
+  // const createLoginWindow = () => {
+  //   // 如果 ListWindow 已经存在但不可见，直接显示它
+  //   if (LoginWindow && !LoginWindow.isDestroyed() && !LoginWindow.isVisible()) {
+  //     LoginWindow.show();
+  //     return;
+  //   }
+
+  //   // 如果 ListWindow 不存在或已被销毁，创建新的窗口
+  //   LoginWindow = new BrowserWindow({
+  //     width: 600,
+  //     height: 170,
+  //     show: false,
+  //     transparent: true,
+  //     frame: false,
+  //     hasShadow: false, //去除阴影
+  //     alwaysOnTop: true,
+  //     ...(process.platform === "linux" ? { icon } : {}),
+  //     autoHideMenuBar: true,
+  //     webPreferences: {
+  //       preload: join(__dirname, "../preload/index.js"),
+  //       sandbox: false,
+  //     },
+  //   });
+
+  //   let winHeight = screen.getPrimaryDisplay().bounds.height;
+  //   LoginWindow.setBounds({
+  //     y: winHeight - 250,
+  //   });
+
+  //   // 设置窗口关闭事件
+  //   LoginWindow.on("closed", () => {
+  //     LoginWindow = null;
+  //   });
+
+  //   LoginWindow.on("ready-to-show", () => {
+  //     if (LoginWindow) {
+  //       LoginWindow.show();
+  //     }
+  //   });
+
+  //   if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
+  //     LoginWindow.loadURL(process.env["ELECTRON_RENDERER_URL"] + "/#/Login");
+  //   } else {
+  //     LoginWindow.loadFile(join(__dirname, "../renderer/index.html"));
+  //   }
+  // };
+
+  // ipcMain.handle("new-Login", async () => {
+  //   // 检查 LoginWindow 是否已经存在且可见
+  //   if (LoginWindow && !LoginWindow.isDestroyed() && LoginWindow.isVisible()) {
+  //     // 如果窗口已经存在且可见，就让它隐藏
+  //     LoginWindow.hide();
+  //     return "Login window hidden";
+  //   } else {
+  //     // 如果窗口不存在或不可见，就创建或显示它
+  //     createLoginWindow();
+  //     return "Login window created successfully";
+  //   }
+  // });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url);

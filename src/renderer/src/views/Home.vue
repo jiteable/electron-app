@@ -1,6 +1,6 @@
 <template>
   <div class="home-container">
-    <WindowTitleBar />
+    <!-- <WindowTitleBar /> -->
 
     <!-- <div class="home-content">
       home首页

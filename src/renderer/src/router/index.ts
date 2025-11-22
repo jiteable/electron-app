@@ -1,18 +1,16 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 
-import Home from "@renderer/views/Home.vue";
-import List from "@renderer/views/List.vue";
+import { AppRoutes } from "./routes";
 
-export default createRouter({
+import { beforeEach, afterEach } from "./guards";
+
+const AppRouter = createRouter({
   history: createWebHashHistory(),
-  routes: [
-    {
-      path: "/",
-      component: Home,
-    },
-    {
-      path: "/list",
-      component: List,
-    },
-  ],
+  routes: AppRoutes,
 });
+
+AppRouter.beforeEach(beforeEach);
+
+AppRouter.afterEach(afterEach);
+
+export default AppRouter;
