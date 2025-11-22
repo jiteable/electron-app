@@ -6,6 +6,9 @@ import {
 } from "electron-vite";
 import vue from "@vitejs/plugin-vue";
 
+const publicDir = resolve("resources");
+const envDir = resolve("build");
+
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin(), bytecodePlugin()],
@@ -14,11 +17,16 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin(), bytecodePlugin()],
   },
   renderer: {
+    publicDir,
+    envDir,
+    envPrefix: "RENDERER_",
     resolve: {
       alias: {
         "@renderer": resolve("src/renderer/src"),
         "@store": resolve("src/renderer/src/store"),
         "@api": resolve("src/renderer/src/api"),
+        "@view": resolve("src/renderer/src/views"),
+        "@router": resolve("src/renderer/src/router"),
       },
     },
     server: {

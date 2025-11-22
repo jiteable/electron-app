@@ -79,6 +79,7 @@ function createWindow(): void {
       show: false,
       transparent: true,
       frame: false,
+      hasShadow: false, //去除阴影
       alwaysOnTop: true,
       ...(process.platform === "linux" ? { icon } : {}),
       autoHideMenuBar: true,
@@ -189,3 +190,7 @@ app.on("window-all-closed", () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+//在开发阶段和生产阶段打开的loadUrl和loadFile注意事项
+//loadUrl => 主进程,在开发阶段生效
+//loadFile => 主进程,在生产阶段生效

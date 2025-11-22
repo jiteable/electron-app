@@ -2,12 +2,16 @@
   <div class="home-container">
     <WindowTitleBar />
 
-    <div class="home-content">
+    <!-- <div class="home-content">
       home首页
 
       <button @click="newList">歌词</button>
       <button @click="down">下载任务</button>
-    </div>
+    </div> -->
+    <input v-model="userName" />
+    <input v-model="password" />
+    <button @click="login">登录</button>
+
   </div>
 </template>
 
