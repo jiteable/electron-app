@@ -77,13 +77,10 @@ onBeforeMount(() => {
 })
 
 const getCodeApi = async () => {
-  const key = new Date().getTime().toString()
-  captcha.key = key
+  form.key = new Date().getTime().toString()
   const res = await captchaImg({
-    key: captcha.key
+    key: form.key
   })
-
-  console.log('res', res)
 
   let blob = new Blob([res], { type: 'image/png' })
   let imgUrl = URL.createObjectURL(blob)
@@ -117,7 +114,7 @@ const submitForm = async () => {
       username: Encrypt(form.username),
       password: Encrypt(form.password),
       captcha: form.captcha,
-      key: captcha.key
+      key: form.key
     })
 
     console.log('登录结果:', res)
